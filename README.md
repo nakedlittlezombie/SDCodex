@@ -58,6 +58,10 @@ python run.py
 
 By default, the application is configured to run on `http://0.0.0.0:1234` (or port `5000` depending on the settings). You can customize the host and port directly inside `run.py`.
 
+## Recommended LLM Model
+
+https://huggingface.co/HauhauCS/Qwen3.5-9B-Uncensored-HauhauCS-Aggressive
+
 ## Example Prompts for LMStudio & Captioning
 
 When using a local inference application like LMStudio in conjunction with SDCodex for managing your dataset, these example prompts are highly recommended to get the best captioning and generation results.
