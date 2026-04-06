@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - SD Codex{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-cog me-2"></i> Settings</h4>
+            </div>
+            <div class="card-body">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form method="post">
+                    <div class="mb-4">
+                        <label for="api_key" class="form-label">Civitai API Key</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                            <input type="password" class="form-control" id="api_key" name="api_key"
+                                value="{{ api_key if api_key else '' }}" placeholder="Enter your Civitai API Key">
+                        </div>
+                        <div class="form-text">
+                            Your API key is stored in your session and used to authenticate requests to Civitai.
+                            You can generate an API key in your <a href="https://civitai.com/user/settings"
+                                target="_blank">Civitai Settings</a>.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Status</h5>
+                        <div class="d-flex align-items-center">
+                            {% if user %}
+                            <div class="text-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Logged in as <strong>{{ user.username if user.username else 'Unknown User' }}</strong>
+                            </div>
+                            {% else %}
+                            <div class="text-secondary">
+                                <i class="fas fa-circle me-2"></i>
+                                Not logged in
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h5>Download Directories</h5>
+                        <p class="text-muted small">Specify where to save downloads for each model type. If left blank,
+                            downloads will go to the default 'downloads' folder.</p>
+
+                        <div class="row g-3">
+                            {% for type in model_types %}
+                            <div class="col-md-6">
+                                <label for="dir_{{ type }}" class="form-label">{{ type }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-folder"></i></span>
+                                    <input type="text" class="form-control" id="dir_{{ type }}" name="dir_{{ type }}"
+                                        value="{{ directories.get(type, '') }}" placeholder="/path/to/{{ type|lower }}">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Save Settings
+                        </button>
+                        {% if api_key %}
+                        <button type="submit" name="action" value="clear" class="btn btn-outline-danger">
+                            <i class="fas fa-trash-alt me-2"></i> Clear API Key
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-sync me-2"></i> Library Management</h4>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Scan Library</h5>
+                <p class="card-text">Scan your configured download directories for existing models. This will identify
+                    models, download missing metadata and preview images, and add them to your downloaded collection.
+                </p>
+                <form action="{{ url_for('main.scan_library') }}" method="POST">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt me-2"></i> Scan Library
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

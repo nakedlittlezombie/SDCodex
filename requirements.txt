@@ -1,0 +1,10 @@
+Flask
+Werkzeug
+Pillow
+Flask-WTF
+Flask-Paginate
+requests
+sd-prompt-reader
+Flask-SQLAlchemy
+openai
+piexif

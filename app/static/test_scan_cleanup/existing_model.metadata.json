@@ -1,0 +1,23 @@
+{
+    "id": 404,
+    "name": "Existing Model",
+    "type": "Checkpoint",
+    "modelVersions": [
+        {
+            "id": 303,
+            "modelId": 404,
+            "name": "v1.0",
+            "model": {
+                "name": "Existing Model",
+                "type": "Checkpoint"
+            },
+            "images": [],
+            "files": [
+                {
+                    "name": "existing_model.safetensors",
+                    "primary": true
+                }
+            ]
+        }
+    ]
+}

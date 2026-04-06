@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}My Library - SDCodex{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Library</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('main.library') }}"
+                    class="list-group-item list-group-item-action {% if not current_type %}active{% endif %}">
+                    All Models
+                </a>
+                {% for type in types %}
+                <a href="{{ url_for('main.library', type=type) }}"
+                    class="list-group-item list-group-item-action {% if current_type == type %}active{% endif %}">
+                    {{ type }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="col-md-9 col-lg-10">
+        <h2 class="mb-4">
+            {% if current_type %}{{ current_type }}{% else %}All Models{% endif %}
+            <span class="badge bg-secondary fs-6 align-middle">{{ models|length }}</span>
+        </h2>
+
+        {% if models %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for model in models %}
+            <div class="col">
+                <div class="card h-100 shadow-sm model-card">
+                    <a href="{{ url_for('main.model_detail', model_id=model.model_id) }}"
+                        class="text-decoration-none text-dark">
+                        <div class="position-relative">
+                            {% if model.image_path %}
+                            <img src="{{ url_for('main.serve_file', filename=model.image_path) }}" class="card-img-top"
+                                alt="{{ model.name }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center card-img-top"
+                                style="height: 200px;">
+                                <i class="fas fa-image fa-3x"></i>
+                            </div>
+                            {% endif %}
+
+                            <div class="position-absolute top-0 end-0 p-2">
+                                <span class="badge bg-primary">{{ model.type }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate" title="{{ model.name }}">{{ model.name }}</h6>
+                            <p class="card-text small text-muted mb-0">
+                                <i class="fas fa-code-branch me-1"></i> Version ID: {{ model.version_id }}
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i> No models found in your library.
+            <a href="{{ url_for('main.settings') }}" class="alert-link">Scan your library</a> or download some models!
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
