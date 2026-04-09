@@ -9,13 +9,19 @@ SDCodex is a web application built with Flask for exploring, organizing, and man
 ## Features
 
 - **Model Browser & Search:** Browse AI models by type, base model, and tags. Search functionality covers models, creators, and tags so you can easily find what you need.
+
+![CivAI](img/civai.jpg)
+
 - **Creator Profiles:** Explore profiles of creators and see models associated with them.
 - **Filtering Options:** Filter models effectively by various criteria.
 - **Image Gallery & Metadata:** An integrated gallery feature configured to show model generation outputs and references, with capabilities to read embedded generation metadata.
 - **Captioning & LMStudio Integration:** Generate, save, and edit highly detailed natural language captions for your images, perfect for creating AI model training datasets. The gallery makes it easy to save captions, and the built-in integrations pair excellently with local AI interfaces like **LMStudio**.
+
+![Caption](img/caption.jpg)
+
 - **Responsive Interface:** The application is built with a mobile-friendly and responsive design, ensuring it works seamlessly across multiple devices.
   
-![SDCodex Interface](screenshot.png)
+
 
 
 ## Tech Stack
