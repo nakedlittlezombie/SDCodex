@@ -39,6 +39,7 @@ venv.bak/
 instance/
 civitr.db
 models.db
+app/static/saved_gallery/
 
 # Tests
 .pytest_cache/

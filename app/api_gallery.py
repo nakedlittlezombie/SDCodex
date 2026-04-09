@@ -653,14 +653,99 @@ def save_gallery_image():
         print(f"Error saving to gallery: {e}")
         return jsonify({"error": str(e)}), 500
 
+@gallery.route("/api/gallery/save-all", methods=["POST"])
+def save_all_gallery_images():
+    """API to save all captioned images in a folder to the persistent gallery"""
+    from app import db
+    from app.models import GalleryImage
+    from flask import current_app
+    
+    data = request.json or {}
+    folder_path = data.get("folderPath")
+    
+    if not folder_path:
+        return jsonify({"error": "Folder path is required"}), 400
+        
+    folder_path = folder_path.strip('"\'')
+    
+    if not os.path.exists(folder_path):
+        return jsonify({"error": "Folder not found"}), 400
+        
+    gallery_dir = os.path.join(current_app.root_path, "static", "saved_gallery")
+    if not os.path.exists(gallery_dir):
+        os.makedirs(gallery_dir, exist_ok=True)
+
+    saved_count = 0
+    try:
+        all_files = os.listdir(folder_path)
+        for file_name in all_files:
+            ext = os.path.splitext(file_name)[1].lower()
+            if ext in IMAGE_EXTENSIONS:
+                txt_path = os.path.join(folder_path, os.path.splitext(file_name)[0] + '.txt')
+                if os.path.exists(txt_path):
+                    with open(txt_path, 'r', encoding='utf-8') as f:
+                        caption = f.read().strip()
+                    
+                    if caption:
+                        image_path = os.path.join(folder_path, file_name)
+                        
+                        sd_prompt = ""
+                        sd_negative = ""
+                        sd_setting = ""
+                        if ImageDataReader:
+                            try:
+                                reader = ImageDataReader(image_path)
+                                if reader.positive: sd_prompt = str(reader.positive).strip()
+                                if reader.negative: sd_negative = str(reader.negative).strip()
+                                if reader.setting: sd_setting = str(reader.setting).strip()
+                            except:
+                                pass
+                                
+                        base, iext = os.path.splitext(file_name)
+                        dest_file = file_name
+                        dest_path = os.path.join(gallery_dir, dest_file)
+                        counter = 1
+                        while os.path.exists(dest_path):
+                            dest_file = f"{base}_{counter}{iext}"
+                            dest_path = os.path.join(gallery_dir, dest_file)
+                            counter += 1
+                            
+                        shutil.copy2(image_path, dest_path)
+                        rel_path = f"saved_gallery/{dest_file}"
+                        
+                        new_image = GalleryImage(
+                            file_name=dest_file,
+                            image_path=rel_path,
+                            caption=caption,
+                            sd_prompt=sd_prompt,
+                            sd_negative=sd_negative,
+                            sd_setting=sd_setting
+                        )
+                        db.session.add(new_image)
+                        saved_count += 1
+                        
+        db.session.commit()
+        return jsonify({"status": "success", "saved_count": saved_count})
+        
+    except Exception as e:
+        print(f"Error saving all to gallery: {e}")
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 @gallery.route("/api/gallery/saved", methods=["GET"])
 def get_saved_gallery():
     """API to retrieve saved gallery images"""
     from app.models import GalleryImage
     try:
-        images = GalleryImage.query.order_by(GalleryImage.created_at.desc()).all()
+        page = int(request.args.get("page", 1))
+        limit = int(request.args.get("limit", 20))
+        page = max(1, page)
+        limit = max(1, limit)
+
+        pagination = GalleryImage.query.order_by(GalleryImage.created_at.desc()).paginate(page=page, per_page=limit, error_out=False)
+        
         results = []
-        for img in images:
+        for img in pagination.items:
             results.append({
                 "id": img.id,
                 "file_name": img.file_name,
@@ -671,7 +756,14 @@ def get_saved_gallery():
                 "sd_setting": img.sd_setting or "",
                 "created_at": img.created_at.isoformat() if img.created_at else None
             })
-        return jsonify({"images": results})
+            
+        return jsonify({
+            "images": results,
+            "total": pagination.total,
+            "page": pagination.page,
+            "totalPages": pagination.pages or 1,
+            "limit": limit
+        })
     except Exception as e:
         print(f"Error retrieving saved gallery: {e}")
         return jsonify({"error": str(e)}), 500

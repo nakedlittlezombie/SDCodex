@@ -19,6 +19,7 @@
         transition: transform 0.2s, box-shadow 0.2s;
         display: flex;
         flex-direction: column;
+        cursor: pointer;
     }
     
     [data-theme="dark"] .gallery-item {
@@ -179,6 +180,17 @@
         <div>
             <h1>Saved Gallery</h1>
             <p style="color: var(--text-secondary)">Your persistently saved images and captions</p>
+            <div id="count-text" style="font-size: 14px; color: var(--text-secondary)">0 images</div>
+        </div>
+        <div class="pagination" style="display: flex; align-items: center; gap: 10px;">
+            <select id="items-per-page" class="form-select form-select-sm" style="width: auto;">
+                <option value="20">20 / page</option>
+                <option value="50">50 / page</option>
+                <option value="100">100 / page</option>
+            </select>
+            <button id="prev-btn" class="btn btn-sm btn-secondary" disabled>Previous</button>
+            <span id="page-info" style="font-size: 13px; font-weight: 600;">Page 1 of 1</span>
+            <button id="next-btn" class="btn btn-sm btn-secondary" disabled>Next</button>
         </div>
     </div>
 
@@ -219,16 +231,38 @@
 <script>
     let savedImages = [];
     let currentDetailedImageId = null;
+    let currentPage = 1;
+    let itemsPerPage = 20;
 
-    async function loadSavedGallery() {
+    const itemsPerPageSelect = document.getElementById('items-per-page');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const pageInfo = document.getElementById('page-info');
+    const countText = document.getElementById('count-text');
+
+    itemsPerPageSelect.onchange = () => {
+        itemsPerPage = parseInt(itemsPerPageSelect.value);
+        loadSavedGallery(1);
+    };
+
+    prevBtn.onclick = () => loadSavedGallery(currentPage - 1);
+    nextBtn.onclick = () => loadSavedGallery(currentPage + 1);
+
+    async function loadSavedGallery(page = 1) {
+        currentPage = page;
         const container = document.getElementById('gallery-container');
         try {
-            const response = await fetch('/api/gallery/saved');
+            const response = await fetch(`/api/gallery/saved?page=${page}&limit=${itemsPerPage}`);
             const data = await response.json();
             
             if (!response.ok) throw new Error(data.error || 'Failed to load');
             
             savedImages = data.images || [];
+            
+            countText.innerText = `Total: ${data.total} images`;
+            pageInfo.innerText = `Page ${data.page} of ${data.totalPages}`;
+            prevBtn.disabled = data.page <= 1;
+            nextBtn.disabled = data.page >= data.totalPages;
             
             if (savedImages.length === 0) {
                 container.innerHTML = '<div class="loading-state col-12" style="grid-column: 1 / -1;">No images saved yet. Go to Captioning to save some!</div>';
@@ -241,8 +275,9 @@
                 
                 const item = document.createElement('div');
                 item.className = 'gallery-item';
+                item.onclick = () => openDetailModal(img.id);
                 item.innerHTML = `
-                    <img class="item-image" src="${img.image_path}" alt="${img.file_name}" onclick="openDetailModal(${img.id})">
+                    <img class="item-image" src="${img.image_path}" alt="${img.file_name}">
                     <div class="item-content">
                         <div class="item-caption">${img.caption || 'No caption'}</div>
                         <div class="item-actions">
@@ -295,7 +330,7 @@
         try {
             const res = await fetch(`/api/gallery/saved/${id}`, { method: 'DELETE' });
             if (res.ok) {
-                loadSavedGallery();
+                loadSavedGallery(currentPage);
             } else {
                 const data = await res.json();
                 alert('Error: ' + data.error);

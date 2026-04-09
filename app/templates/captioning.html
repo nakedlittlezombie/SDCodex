@@ -329,7 +329,7 @@
 
         .button-group {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 20px;
             margin-top: 10px;
         }
@@ -443,6 +443,7 @@
             <div class="button-group">
                 <button class="btn btn-success" id="caption-missing-btn">Caption Missing</button>
                 <button class="btn btn-warning" style="color: white;" id="caption-all-btn">Update All</button>
+                <button class="btn btn-primary" id="save-all-gallery-btn">Save all captioned to Gallery</button>
             </div>
         </div>
 
@@ -466,7 +467,12 @@
                     <h2 style="font-size: 20px; margin: 0;">Image Gallery</h2>
                     <div id="count-text" style="font-size: 14px; color: var(--text-secondary)">0 images</div>
                 </div>
-                <div class="pagination">
+                <div class="pagination" style="display: flex; align-items: center; gap: 10px;">
+                    <select id="items-per-page" class="form-select form-select-sm" style="width: auto;">
+                        <option value="20">20 / page</option>
+                        <option value="50">50 / page</option>
+                        <option value="100">100 / page</option>
+                    </select>
                     <button id="prev-btn" class="btn btn-sm btn-secondary" disabled>Previous</button>
                     <span id="page-info" style="font-size: 13px; font-weight: 600;">Page 1 of 1</span>
                     <button id="next-btn" class="btn btn-sm btn-secondary" disabled>Next</button>
@@ -482,7 +488,7 @@
         let currentPage = 1;
         let currentImages = []; // Stores images of the current page
         let currentImageIndex = -1;
-        const itemsPerPage = 20;
+        let itemsPerPage = 20;
         let abortController = null;
 
         const formatTime = (ms) => {
@@ -519,6 +525,8 @@
         const apiStatusDot = document.getElementById('api-status-dot');
         const lmStudioUrlInput = document.getElementById('lmStudioUrl');
         const triggerTagInput = document.getElementById('triggerTag');
+        const saveAllGalleryBtn = document.getElementById('save-all-gallery-btn');
+        const itemsPerPageSelect = document.getElementById('items-per-page');
 
         const modal = document.getElementById('image-modal');
         const modalImg = document.getElementById('modal-img');
@@ -1008,6 +1016,44 @@
 
         captionMissingBtn.onclick = () => startCaptioning('missing');
         captionAllBtn.onclick = () => startCaptioning('all');
+
+        itemsPerPageSelect.onchange = () => {
+            itemsPerPage = parseInt(itemsPerPageSelect.value);
+            loadFolder(1);
+        };
+
+        saveAllGalleryBtn.onclick = async () => {
+            const folderPath = folderPathInput.value;
+            if (!folderPath) return alert('Please select a folder first');
+            
+            saveAllGalleryBtn.disabled = true;
+            const originalText = saveAllGalleryBtn.innerText;
+            saveAllGalleryBtn.innerText = 'Saving...';
+            
+            try {
+                const res = await fetch('/api/gallery/save-all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folderPath })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    saveAllGalleryBtn.innerText = `Saved ${data.saved_count} images!`;
+                    setTimeout(() => {
+                        saveAllGalleryBtn.innerText = originalText;
+                        saveAllGalleryBtn.disabled = false;
+                    }, 3000);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to save all to gallery'));
+                    saveAllGalleryBtn.innerText = originalText;
+                    saveAllGalleryBtn.disabled = false;
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+                saveAllGalleryBtn.innerText = originalText;
+                saveAllGalleryBtn.disabled = false;
+            }
+        };
 
         const promptSelect = document.getElementById('prompt-select');
         const promptInput = document.getElementById('prompt');
