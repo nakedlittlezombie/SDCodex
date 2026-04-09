@@ -1,7 +1,8 @@
 #  
 <h1 align="center" style="font-weight: bold;">SDCodex </h1>
-
-![SDCodex Interface](screenshot.png)
+<p align="center">
+<img src="app/static/img/icon/SDCodex.svg" alt="SDCodex" width="300" height="300">
+</p>
 
 SDCodex is a web application built with Flask for exploring, organizing, and managing Stable Diffusion models. It provides a user-friendly interface to browse models by type, base model, and tags, alongside an integrated image gallery system.
 
@@ -13,6 +14,7 @@ SDCodex is a web application built with Flask for exploring, organizing, and man
 - **Image Gallery & Metadata:** An integrated gallery feature configured to show model generation outputs and references, with capabilities to read embedded generation metadata.
 - **Captioning & LMStudio Integration:** Generate, save, and edit highly detailed natural language captions for your images, perfect for creating AI model training datasets. The gallery makes it easy to save captions, and the built-in integrations pair excellently with local AI interfaces like **LMStudio**.
 - **Responsive Interface:** The application is built with a mobile-friendly and responsive design, ensuring it works seamlessly across multiple devices.
+![SDCodex Interface](screenshot.png)
 
 ## Tech Stack
 
