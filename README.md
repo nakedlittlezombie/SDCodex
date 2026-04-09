@@ -1,4 +1,5 @@
-# SDCodex
+#  
+<h1 align="center" style="font-weight: bold;">SDCodex </h1>
 
 ![SDCodex Interface](screenshot.png)
 
